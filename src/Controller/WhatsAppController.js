@@ -6,6 +6,8 @@ class WhatsAppController {
 
         this.elementsPrototype();
         this.loadElements();
+        this.initEvents();
+
 
     }
 
@@ -23,27 +25,27 @@ class WhatsAppController {
 
     elementsPrototype() {
         //adiciona a função hide para todos os ID's
-        Element.prototype.hide = function() {
+        Element.prototype.hide = function () {
             this.style.display = 'none';
             return this;
         }
 
         //adiciona a função show para todos os ID's
-        Element.prototype.show = function() {
+        Element.prototype.show = function () {
             this.style.display = 'block';
             return this;
         }
 
         //adiciona a função toggle para todos os ID's
-        Element.prototype.toggle = function() {
+        Element.prototype.toggle = function () {
             this.style.display = (this.style.display === 'none') ? 'block' : 'none';
             return this;
         }
 
         //cria o evento dinamico de acordo com o que for passado como parametro
-        Element.prototype.on = function(events, fn) {
+        Element.prototype.on = function (events, fn) {
             events.split(' ').forEach(event => {
-                
+
                 this.addEventListener(event, fn);
 
             });
@@ -77,5 +79,57 @@ class WhatsAppController {
         }
 
     }
+
+    initEvents() {
+
+        this.el.myPhoto.on('click', e => {
+
+            this.closeAllLeftPanel();
+            this.el.panelEditProfile.show();
+            setTimeout(() => {
+                this.el.panelEditProfile.addClass('open');
+            }, 300);
+        });
+
+
+        this.el.btnNewContact.on('click', e => {
+
+            this.closeAllLeftPanel();
+            this.el.panelAddContact.show();
+            setTimeout(() => {
+                this.el.panelAddContact.addClass('open');
+            }, 300);
+
+        });
+
+        this.el.btnClosePanelEditProfile.on('click', e => {
+
+            this.el.panelEditProfile.removeClass('open');
+
+        });
+
+        this.el.btnClosePanelAddContact.on('click', e => {
+
+            this.el.panelAddContact.removeClass('open');
+
+        });
+
+
+        this.el.photoContainerEditProfile.on('click', e => {
+
+            this.el.inputProfilePhoto.click();
+
+
+        });
+
+    }
+
+    closeAllLeftPanel() {
+
+        this.el.panelAddContact.hide();
+        this.el.panelEditProfile.hide();
+
+    }
+
 
 }
