@@ -1,0 +1,11 @@
+configurar webpack no packagen.json
+na area scripts 
+"build": "webpack --config webpack.config.js", 
+"start": "webpack-dev-server"
+
+
+iniciando o server
+npm run start
+
+PDF.js
+npm install pdfjs-dist --save

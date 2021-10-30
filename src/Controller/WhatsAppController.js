@@ -1,4 +1,9 @@
-class WhatsAppController {
+import { Format } from './../util/Format';
+import { CameraController } from './CameraController';
+import { DocumentPreviewController } from './DocumentPreviewController';
+
+//export default remove a obrigatoriedade das chaves no momento da importação 
+export class WhatsAppController {
 
     constructor() {
 
@@ -25,25 +30,25 @@ class WhatsAppController {
 
     elementsPrototype() {
         //adiciona a função hide para todos os ID's
-        Element.prototype.hide = function () {
+        Element.prototype.hide = function() {
             this.style.display = 'none';
             return this;
         }
 
         //adiciona a função show para todos os ID's
-        Element.prototype.show = function () {
+        Element.prototype.show = function() {
             this.style.display = 'block';
             return this;
         }
 
         //adiciona a função toggle para todos os ID's
-        Element.prototype.toggle = function () {
+        Element.prototype.toggle = function() {
             this.style.display = (this.style.display === 'none') ? 'block' : 'none';
             return this;
         }
 
         //cria o evento dinamico de acordo com o que for passado como parametro
-        Element.prototype.on = function (events, fn) {
+        Element.prototype.on = function(events, fn) {
             events.split(' ').forEach(event => {
 
                 this.addEventListener(event, fn);
@@ -52,37 +57,37 @@ class WhatsAppController {
             return this;
         }
 
-        Element.prototype.css = function (styles) {
+        Element.prototype.css = function(styles) {
             for (let name in styles) {
                 this.style[name] = styles[name];
             }
             return this;
         }
 
-        Element.prototype.addClass = function (name) {
+        Element.prototype.addClass = function(name) {
             this.classList.add(name);
             return this;
         }
 
-        Element.prototype.removeClass = function (name) {
+        Element.prototype.removeClass = function(name) {
             this.classList.remove(name);
             return this;
         }
 
-        Element.prototype.toggleClass = function (name) {
+        Element.prototype.toggleClass = function(name) {
             this.classList.toggle(name);
             return this;
         }
 
-        Element.prototype.hasClass = function (name) {
+        Element.prototype.hasClass = function(name) {
             return this.classList.contains(name);
         }
 
-        HTMLFormElement.prototype.getForm = function () {
+        HTMLFormElement.prototype.getForm = function() {
             return new FormData(this);
         }
 
-        HTMLFormElement.prototype.toJSON = function () {
+        HTMLFormElement.prototype.toJSON = function() {
 
             let json = {};
 
@@ -209,18 +214,44 @@ class WhatsAppController {
                 'height': 'calc(100% - 120px)'
             });
 
+            this._camera = new CameraController(this.el.videoCamera);
+
         });
 
         this.el.btnClosePanelCamera.on('click', e => {
 
             this.closeAllMainPanel();
             this.el.panelMessagesContainer.show();
+            this._camera.stop();
 
         });
 
         this.el.btnTakePicture.on('click', e => {
 
-            console.log('take picture');
+            let dataUrl = this._camera.takePicture();
+
+            this.el.pictureCamera.src = dataUrl;
+            this.el.pictureCamera.show();
+            this.el.videoCamera.hide();
+            this.el.btnReshootPanelCamera.show();
+            this.el.containerTakePicture.hide();
+            this.el.containerSendPicture.show();
+
+        });
+
+        this.el.btnReshootPanelCamera.on('click', e => {
+
+            this.el.pictureCamera.hide();
+            this.el.videoCamera.show();
+            this.el.btnReshootPanelCamera.hide();
+            this.el.containerTakePicture.show();
+            this.el.containerSendPicture.hide();
+
+        });
+
+        this.el.btnSendPicture.on('click', e => {
+
+            console.log(this.el.pictureCamera.src);
 
         });
 
@@ -231,6 +262,58 @@ class WhatsAppController {
             this.el.panelDocumentPreview.css({
                 'height': 'calc(100% - 120px)'
             });
+
+            this.el.inputDocument.click();
+
+        });
+
+        this.el.inputDocument.on('change', e => {
+
+            if (this.el.inputDocument.files.length) {
+
+                let file = this.el.inputDocument.files[0];
+
+                this._documentPreviewController = new DocumentPreviewController(file);
+
+                this._documentPreviewController.getPreviewData().then(result => {
+
+                    this.el.imgPanelDocumentPreview.src = result.src;
+                    this.el.infoPanelDocumentPreview.innerHTML = result.info;
+                    this.el.imagePanelDocumentPreview.show();
+                    this.el.filePanelDocumentPreview.hide();
+
+                }).catch(err => {
+
+                    switch (file.type) {
+                        case 'application/vnd.ms.excel':
+                        case 'application/vnd.ms.openxmlformats-officedocument.spreadsheetml.sheet':
+                            this.el.iconPanelDocumentPreview.className = 'jcxhw icon-doc-xls';
+                            break;
+
+                        case 'application/vnd.ms-powerpoint':
+                        case 'application/vnd.ms.openxmlformats-officedocument.presentationml.presentation':
+                            this.el.iconPanelDocumentPreview.className = 'jcxhw icon-doc-ppt';
+                            break;
+
+                        case 'application/msword':
+                        case 'application/vnd.ms.openxmlformats-officedocument.wordprocessingml.document':
+                            this.el.iconPanelDocumentPreview.className = 'jcxhw icon-doc-doc';
+                            break;
+
+                        default:
+                            this.el.iconPanelDocumentPreview.className = 'jcxhw icon-doc-generic';
+                            break;
+                    }
+
+                    this.el.filenamePanelDocumentPreview.innerHTML = file.name;
+                    this.el.imagePanelDocumentPreview.hide();
+                    this.el.filePanelDocumentPreview.show();
+
+                });
+
+                console.log(file);
+            }
+
 
         });
 
@@ -260,6 +343,132 @@ class WhatsAppController {
 
         });
 
+        this.el.btnSendMicrophone.on('click', e => {
+
+            this.el.recordMicrophone.show();
+            this.el.btnSendMicrophone.hide();
+            this.startRecordMicrophoneTime();
+
+        });
+
+
+        this.el.btnCancelMicrophone.on('click', e => {
+
+            this.closeRecordMicrophone();
+
+        });
+
+        this.el.btnFinishMicrophone.on('click', e => {
+
+            this.closeRecordMicrophone();
+
+        });
+
+        this.el.inputText.on('keypress', e => {
+
+            if (e.key === 'Enter' && !e.ctrlKey) {
+
+                e.preventDefault();
+                console.log(this.el.inputText.innerHTML);
+
+            }
+
+        });
+
+        this.el.inputText.on('keyup', e => {
+
+            if (this.el.inputText.innerHTML.length) {
+
+                this.el.inputPlaceholder.hide();
+                this.el.btnSendMicrophone.hide();
+                this.el.btnSend.show();
+
+            } else {
+
+                this.el.inputPlaceholder.show();
+                this.el.btnSendMicrophone.show();
+                this.el.btnSend.hide();
+
+            }
+
+
+        });
+
+        this.el.btnSend.on('click', e => {
+
+            console.log(this.el.inputText.innerHTML);
+
+        });
+
+        this.el.btnEmojis.on('click', e => {
+
+            this.el.panelEmojis.toggleClass('open');
+
+        });
+
+        this.el.panelEmojis.querySelectorAll('.emojik').forEach(emoji => {
+
+            emoji.on('click', e => {
+
+                let img = this.el.imgEmojiDefault.cloneNode();
+
+                img.style.cssText = emoji.style.cssText;
+                img.dataset.unicode = emoji.dataset.unicode;
+                img.alt = emoji.dataset.unicode;
+
+                emoji.classList.forEach(name => {
+
+                    img.classList.add(name);
+
+                });
+
+
+                let cursor = window.getSelection();
+
+                if (!cursor.facousNode || !cursor.focusNode.id == 'input-text') {
+                    this.el.inputText.focus();
+
+                    cursor = window.getSelection();
+
+                }
+
+                let range = document.createRange();
+
+                range = cursor.getRangeAt(0);
+                range.deleteContents();
+
+                let frag = document.createDocumentFragment();
+
+                frag.appendChild(img);
+
+                range.insertNode(frag);
+
+                range.setStartAfter(img);
+
+                this.el.inputText.dispatchEvent(new Event('keyup'));
+
+            });
+
+        });
+
+    }
+
+    startRecordMicrophoneTime() {
+
+        let start = Date.now();
+
+        this._recordMicrophoneInterval = setInterval(() => {
+
+            this.el.recordMicrophoneTimer.innerHTML = Format.toTime(Date.now() - start);
+
+        }, 100);
+    }
+
+    closeRecordMicrophone() {
+
+        this.el.recordMicrophone.hide();
+        this.el.btnSendMicrophone.show();
+        clearInterval(this._recordMicrophoneInterval);
 
     }
 
@@ -269,7 +478,6 @@ class WhatsAppController {
         this.el.panelMessagesContainer.hide();
         this.el.panelDocumentPreview.removeClass('open');
         this.el.panelCamera.removeClass('open');
-
 
     };
 
