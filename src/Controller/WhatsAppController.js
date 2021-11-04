@@ -1,5 +1,6 @@
 import { Format } from './../util/Format';
 import { CameraController } from './CameraController';
+import { MicrophoneController } from './MicrophoneController';
 import { DocumentPreviewController } from './DocumentPreviewController';
 
 //export default remove a obrigatoriedade das chaves no momento da importação 
@@ -271,6 +272,10 @@ export class WhatsAppController {
 
             if (this.el.inputDocument.files.length) {
 
+                this.el.panelDocumentPreview.css({
+                    'height': '1%'
+                });
+
                 let file = this.el.inputDocument.files[0];
 
                 this._documentPreviewController = new DocumentPreviewController(file);
@@ -282,7 +287,15 @@ export class WhatsAppController {
                     this.el.imagePanelDocumentPreview.show();
                     this.el.filePanelDocumentPreview.hide();
 
+                    this.el.panelDocumentPreview.css({
+                        'height': 'calc(100% - 120px)'
+                    });
+
                 }).catch(err => {
+
+                    this.el.panelDocumentPreview.css({
+                        'height': 'calc(100% - 120px)'
+                    });
 
                     switch (file.type) {
                         case 'application/vnd.ms.excel':
@@ -311,7 +324,6 @@ export class WhatsAppController {
 
                 });
 
-                console.log(file);
             }
 
 
@@ -349,17 +361,29 @@ export class WhatsAppController {
             this.el.btnSendMicrophone.hide();
             this.startRecordMicrophoneTime();
 
+            this._microphoneController = new MicrophoneController();
+
+
+            this._microphoneController.on('ready', audio => {
+
+                this._microphoneController.startRecorder();
+                console.log('ready teste');
+
+            });
+
         });
 
 
         this.el.btnCancelMicrophone.on('click', e => {
 
+            this._microphoneController.stopRecorder();
             this.closeRecordMicrophone();
 
         });
 
         this.el.btnFinishMicrophone.on('click', e => {
 
+            this._microphoneController.stopRecorder();
             this.closeRecordMicrophone();
 
         });

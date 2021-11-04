@@ -50,13 +50,31 @@ export class DocumentPreviewController {
 
                             pdf.getPage(1).then(page => {
 
-                                let viewport = page.getViewPort(1);
+                                let viewport = page.getViewport(1); // pegando a primeira pagina do pdf
 
                                 let canvas = document.createElement('canvas');
-                                let context = canvas.getContext('2d');
+                                let canvasContext = canvas.getContext('2d');
 
                                 canvas.width = viewport.width;
                                 canvas.height = viewport.height;
+
+                                page.render({
+                                    canvasContext,
+                                    viewport
+                                }).then(() => {
+
+                                    let _s = (pdf.numPages > 1) ? 's' : '';
+
+                                    s({
+                                        src: canvas.toDataURL('image/png'),
+                                        info: `${pdf.numPages} pagina${_s}`
+                                    });
+
+                                }).catch(err => {
+
+                                    console.log(err);
+
+                                });
 
                             }).catch(err => {
 
