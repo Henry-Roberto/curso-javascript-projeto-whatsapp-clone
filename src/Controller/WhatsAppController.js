@@ -2,6 +2,7 @@ import { Format } from './../util/Format';
 import { CameraController } from './CameraController';
 import { MicrophoneController } from './MicrophoneController';
 import { DocumentPreviewController } from './DocumentPreviewController';
+import { Firebase } from './../Util/Firebase';
 
 //export default remove a obrigatoriedade das chaves no momento da importação 
 export class WhatsAppController {
@@ -359,7 +360,6 @@ export class WhatsAppController {
 
             this.el.recordMicrophone.show();
             this.el.btnSendMicrophone.hide();
-            this.startRecordMicrophoneTime();
 
             this._microphoneController = new MicrophoneController();
 
@@ -368,6 +368,12 @@ export class WhatsAppController {
 
                 this._microphoneController.startRecorder();
                 console.log('ready teste');
+
+            });
+
+            this._microphoneController.on('recordtimer', timer => {
+
+                this.el.recordMicrophoneTimer.innerHTML = Format.toTime(timer);
 
             });
 
@@ -477,22 +483,11 @@ export class WhatsAppController {
 
     }
 
-    startRecordMicrophoneTime() {
-
-        let start = Date.now();
-
-        this._recordMicrophoneInterval = setInterval(() => {
-
-            this.el.recordMicrophoneTimer.innerHTML = Format.toTime(Date.now() - start);
-
-        }, 100);
-    }
 
     closeRecordMicrophone() {
 
         this.el.recordMicrophone.hide();
         this.el.btnSendMicrophone.show();
-        clearInterval(this._recordMicrophoneInterval);
 
     }
 
