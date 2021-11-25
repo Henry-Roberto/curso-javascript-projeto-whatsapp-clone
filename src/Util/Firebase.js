@@ -1,43 +1,67 @@
-const firebase = require('firebase');
-require('firebase/firestore');
+/** https://firebase.google.com/docs/web/setup?hl=pt-br#aplicativos-node.js*/
+import firebase from "firebase";
+// Add the Firebase services that you want to use
+import "firebase/auth";
+import "firebase/firestore";
 
 export class Firebase {
-
     constructor() {
 
-        this.config = {
+        this._config = {
             apiKey: "AIzaSyDd3gP1C8W-G39taRzqmZlfKFtjFxMYnuY",
             authDomain: "whatsapp-clone-cfcfa.firebaseapp.com",
-            databaseURL: "https://whatsapp-clone-cfcfa.firebaseio.com",
             projectId: "whatsapp-clone-cfcfa",
-            storageBucket: "",
-            messagingSenderId: "60243468017"
-        }
+            storageBucket: "whatsapp-clone-cfcfa.appspot.com",
+            messagingSenderId: "60243468017",
+            appId: "1:60243468017:web:b99d150482ee4811069350",
+            measurementId: "G-4NG4CZDBXM"
+        };
 
         this.init();
     }
 
     init() {
+        if (!window._initializedFirebase) {
 
-        if (!this._initialized) {
-            firebase.initializeApp(this.config);
+            firebase.initializeApp(this._config);
 
             firebase.firestore().settings({
-                timestampsInSnapshots: true
+
+                // timestampsInSnapshots: true
+
             });
 
-            this._initialized = true;
+            window._initializedFirebase = true;
         }
-
     }
 
     static db() {
-
         return firebase.firestore();
     }
-
     static hd() {
         return firebase.storage();
     }
 
+    initAuth() {
+        return new Promise((s, f) => {
+            let provider = new firebase.auth.GoogleAuthProvider();
+
+            firebase.auth().signInWithPopup(provider)
+                .then(result => {
+
+                    let token = result.credential.accessToken;
+                    let user = result.user;
+                    s({
+                        user,
+                        token
+                    });
+
+                })
+                .catch(err => {
+
+                    f(err);
+
+                });
+        });
+    }
 }

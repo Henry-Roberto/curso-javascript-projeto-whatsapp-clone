@@ -1,3 +1,6 @@
+
+npm install webpack@3.1.0
+npm install webpack-dev-server@2.5.1
 configurar webpack no packagen.json
 na area scripts 
 "build": "webpack --config webpack.config.js", 
