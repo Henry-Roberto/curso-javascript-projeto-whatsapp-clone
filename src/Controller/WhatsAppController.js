@@ -194,7 +194,7 @@ export class WhatsAppController {
             display: 'flex'
         });
 
-        Message.getRef(this._contactActive.idChat).orderBy('timeStamp')
+        Message.getRef(this._contactActive.chatId).orderBy('timeStamp')
             .onSnapshot(docs => {
                 this.el.panelMessagesContainer.innerHTML = '';
                 docs.forEach(doc => {
@@ -634,8 +634,7 @@ export class WhatsAppController {
             if (e.key === 'Enter' && !e.ctrlKey) {
 
                 e.preventDefault();
-                console.log(this.el.inputText.innerHTML);
-
+                this.el.btnSend.click();
             }
 
         });
