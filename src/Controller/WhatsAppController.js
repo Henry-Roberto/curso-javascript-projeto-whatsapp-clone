@@ -203,18 +203,37 @@ export class WhatsAppController {
                 let autoScroll = (scrollTop >= scrollTopMax);
 
                 docs.forEach(doc => {
+                    console.log('recebida');
+
                     let data = doc.data();
                     data.id = doc.id;
 
+                    let message = new Message();
+                    message.fromJSON(data);
+
+                    let me = (data.from === this._user.email);
+
                     if (!this.el.panelMessagesContainer.querySelector('#_' + data.id)) {
 
-                        let message = new Message();
-                        message.fromJSON(data);
+                        if (!me) {
 
-                        let me = (data.from === this._user.email);
+                            doc.ref.set({
+                                status: 'read'
+                            }, {
+                                merge: true
+                            })
+                        }
+
                         let view = message.getViewElement(me);
+
                         this.el.panelMessagesContainer.appendChild(view);
 
+
+                    } else if (me) {
+
+                        let msgEl = this.el.panelMessagesContainer.querySelector('#_' + data.id);
+
+                        msgEl.querySelector('.message-status').innerHTML = message.getStatusViewElement().outerHTML
 
                     }
 
@@ -318,8 +337,8 @@ export class WhatsAppController {
 
     initEvents() {
 
-        this.el.inputSearchContacts.on('keyup', e => {
-
+        this.el.inputSearchContacts.on('keydown', e => {
+            console.log(this.el.inputSearchContacts.value.length);
             if (this.el.inputSearchContacts.value.length > 0) {
                 this.el.inputSearchContactsPlaceholder.hide();
             } else {
